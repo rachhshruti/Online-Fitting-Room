@@ -65,7 +65,7 @@ def addModelingArguments(argparser):
     ##ADD NEW INPUT ARGUMRNTS HERE
     macroGroup.add_argument("--target_height_cm", default=None, type=float, help="Target Height in cms")
     macroGroup.add_argument("--target_waist_cm", default=None, type=float, help="Target Waist in cms")
-
+    macroGroup.add_argument("--target_chest_cm", default=None, type=float, help="Target Chest in cms")
 
 
 
@@ -310,9 +310,7 @@ def applyModelingArguments(human, argOptions):
 
     print(human.getHeightCm(),target_height_cm)
 
-
-
-
+    
     target_waist_cm = argOptions["target_waist_cm"]  
     # ['macrodetails-height/Height','measure/measure-waist-decrease','measure/measure-bust-decrease']      
     waist_modifier = 'measure/measure-waist-decrease' ## what is decrease and increase ?
@@ -339,12 +337,40 @@ def applyModelingArguments(human, argOptions):
 
     human.getModifier(waist_modifier).setValue(waist_value)
     human.applyAllTargets()
-
-
-
-
     
     print(getMeasure1(human,my_Measures['waist'],'metric'),target_waist_cm)
+
+
+    ##CHEST 
+    target_chest_cm = argOptions["target_chest_cm"]  
+    # ['macrodetails-height/Height','measure/measure-waist-decrease','measure/measure-bust-decrease']      
+    chest_modifier = 'measure/measure-bust-decrease' ## what is decrease and increase ?
+
+    chest_list = [-1,0,1]
+    chest_abs_list = []
+    
+    for nmx in human.modifierNames:
+        if chest_modifier in nmx:
+            chest_modifier = nmx
+            break
+
+    if chest_modifier not in human.modifierNames:
+        _selectivelyLoadModifiers(human)
+
+
+    for cur_chest in chest_list:
+        human.getModifier(chest_modifier).setValue(cur_chest)
+        human.applyAllTargets()
+        chest_abs_list.append(getMeasure1(human,my_Measures['chest'],'metric'))
+        
+    chest_value = waist_conversion(target_chest_cm,chest_abs_list)
+
+
+    human.getModifier(chest_modifier).setValue(chest_value)
+    human.applyAllTargets()
+
+    
+    print(getMeasure1(human,my_Measures['chest'],'metric'),target_chest_cm)
 
 
 
@@ -513,6 +539,7 @@ def _loadModifiers(human):
     """
     import humanmodifier
     modifiers = humanmodifier.loadModifiers(getpath.getSysDataPath('modifiers/modeling_modifiers.json'), human)
+    ## COMMENT - adds measurement modifiers - earlier 207 now 226 because of the extension
     modifiers.extend(humanmodifier.loadModifiers(getpath.getSysDataPath('modifiers/measurement_modifiers.json'), human))
     return modifiers
 
