@@ -78,11 +78,11 @@ def run(args):
         save(human, args["output"])
 
 
-    # A little debug test
-    if 'PyOpenGL' in sys.modules.keys():
-        log.warning("Debug test detected that OpenGL libraries were imported in the console version! This indicates bad separation from GUI.")
-    if 'PyQt4' in sys.modules.keys():
-        log.warning("Debug test detected that Qt libraries were imported in the console version! This might indicate bad separation from GUI, but is currently normal because MH uses Qt as (only) back-end for loading images.")
+    # # A little debug test
+    # if 'PyOpenGL' in sys.modules.keys():
+    #     log.warning("Debug test detected that OpenGL libraries were imported in the console version! This indicates bad separation from GUI.")
+    # if 'PyQt4' in sys.modules.keys():
+    #     log.warning("Debug test detected that Qt libraries were imported in the console version! This might indicate bad separation from GUI, but is currently normal because MH uses Qt as (only) back-end for loading images.")
 
 def save(human, filepath):
     if filepath.endswith("mhx"):

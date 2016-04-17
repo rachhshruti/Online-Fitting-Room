@@ -45,6 +45,8 @@ import getpath
 import sys
 import os
 import log
+import math
+import numpy as np
 
 def addModelingArguments(argparser):
     """
@@ -242,17 +244,17 @@ def applyModelingArguments(human, argOptions):
             raise RuntimeError('Unknown race "%s" specified on commandline. Must be one of [caucasian, african, asian]' % argOptions["race"])
 
     ### Modifiers (can override some macro parameters set above)
+    _selectivelyLoadModifiers(human)
     if argOptions.get("modifier", None) is not None:
         modifiersChanged = False
         alreadyLoaded = human.modifierNames
+        
 
         for mName, value in argOptions["modifier"]:
-
             for nmx in human.modifierNames:
                 if mName in nmx:
                     mName = nmx
                     break
-
             if mName not in alreadyLoaded:
                 # Attempt to load missing modifiers without loading doubles
                 _selectivelyLoadModifiers(human)
@@ -263,6 +265,7 @@ def applyModelingArguments(human, argOptions):
                 modifiersChanged = True
             except:
                 raise RuntimeError('No modifier named "%s" as specified by --modifier command. See --listmodifiers for list of acceptable options.' % mName)
+            
         # Update human
         if modifiersChanged:
             human.applyAllTargets()
@@ -310,39 +313,38 @@ def applyModelingArguments(human, argOptions):
 
 
 
-    # target_waist_cm = argOptions["target_waist_cm"]  
-    # # ['macrodetails-height/Height','measure/measure-waist-decrease','measure/measure-bust-decrease']      
-    # waist_modifier = 'measure/measure-waist-decrease' ## what is decrease and increase ?
+    target_waist_cm = argOptions["target_waist_cm"]  
+    # ['macrodetails-height/Height','measure/measure-waist-decrease','measure/measure-bust-decrease']      
+    waist_modifier = 'measure/measure-waist-decrease' ## what is decrease and increase ?
 
-    # waist_list = [-1]
-    # waist_abs_list = []
+    waist_list = [-1,0,1]
+    waist_abs_list = []
     
+    for nmx in human.modifierNames:
+        if waist_modifier in nmx:
+            waist_modifier = nmx
+            break
+
+    if waist_modifier not in human.modifierNames:
+        _selectivelyLoadModifiers(human)
+
+
+    for cur_waist in waist_list:
+        human.getModifier(waist_modifier).setValue(cur_waist)
+        human.applyAllTargets()
+        waist_abs_list.append(getMeasure1(human,my_Measures['waist'],'metric'))
+        
+    waist_value = waist_conversion(target_waist_cm,waist_abs_list)
+
+
+    human.getModifier(waist_modifier).setValue(waist_value)
+    human.applyAllTargets()
+
+
+
+
     
-        
-    # for cur_waist in waist_list:
-    #     _selectivelyLoadModifiers(human) ##maatiki unchutunna
-    #     mod_list = human.getModifiers()
-
-    #     for mod in mod_list:
-    #         if 1:#'waist' in mod:
-    #             print(mod)
-    #     print(len(mod_list))        
-
-    #     human.getModifier(waist_modifier).setValue(cur_waist)
-    #     human.applyAllTargets()
-    #     waist_abs_list.append(getMeasure1(human,my_Measures['waist'],'metric'))
-        
-    # waist_value = waist_conversion(target_waist_cm,waist_abs_list)
-
-
-    # human.getModifier(waist_modifier).setValue(waist_value)
-    # human.applyAllTargets()
-
-
-
-
-    # print(human.getHeightCm(),target_height_cm)
-    # print(getMeasure1(human,my_Measures['waist'],'metric'),target_waist_cm)
+    print(getMeasure1(human,my_Measures['waist'],'metric'),target_waist_cm)
 
 
 
@@ -511,6 +513,7 @@ def _loadModifiers(human):
     """
     import humanmodifier
     modifiers = humanmodifier.loadModifiers(getpath.getSysDataPath('modifiers/modeling_modifiers.json'), human)
+    modifiers.extend(humanmodifier.loadModifiers(getpath.getSysDataPath('modifiers/measurement_modifiers.json'), human))
     return modifiers
 
 mods_loaded = False
