@@ -66,6 +66,7 @@ def addModelingArguments(argparser):
     macroGroup.add_argument("--target_height_cm", default=None, type=float, help="Target Height in cms")
     macroGroup.add_argument("--target_waist_cm", default=None, type=float, help="Target Waist in cms")
     macroGroup.add_argument("--target_chest_cm", default=None, type=float, help="Target Chest in cms")
+    macroGroup.add_argument("--target_hips_cm", default=None, type=float, help="Target Hips in cms")
 
 
 
@@ -372,6 +373,34 @@ def applyModelingArguments(human, argOptions):
     
     print(getMeasure1(human,my_Measures['chest'],'metric'),target_chest_cm)
 
+    target_hips_cm = argOptions["target_hips_cm"]  
+    # ['macrodetails-height/Height','measure/measure-waist-decrease','measure/measure-bust-decrease']      
+    hips_modifier = 'measure/measure-hips-decrease' ## what is decrease and increase ?
+
+    hips_list = [-1,0,1]
+    hips_abs_list = []
+    
+    for nmx in human.modifierNames:
+        if hips_modifier in nmx:
+            hips_modifier = nmx
+            break
+
+    if hips_modifier not in human.modifierNames:
+        _selectivelyLoadModifiers(human)
+
+
+    for cur_hips in hips_list:
+        human.getModifier(hips_modifier).setValue(cur_hips)
+        human.applyAllTargets()
+        hips_abs_list.append(getMeasure1(human,my_Measures['hips'],'metric'))
+        
+    hips_value = waist_conversion(target_hips_cm,hips_abs_list)
+
+
+    human.getModifier(hips_modifier).setValue(hips_value)
+    human.applyAllTargets()
+    
+    print(getMeasure1(human,my_Measures['hips'],'metric'),target_hips_cm)
 
 
 
