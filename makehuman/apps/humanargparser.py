@@ -66,6 +66,7 @@ def addModelingArguments(argparser):
     macroGroup.add_argument("--target_height_cm", default=None, type=float, help="Target Height in cms")
     macroGroup.add_argument("--target_waist_cm", default=None, type=float, help="Target Waist in cms")
     macroGroup.add_argument("--target_chest_cm", default=None, type=float, help="Target Chest in cms")
+    # Added the target_hips_cm argument
     macroGroup.add_argument("--target_hips_cm", default=None, type=float, help="Target Hips in cms")
 
 
@@ -373,6 +374,7 @@ def applyModelingArguments(human, argOptions):
     
     print(getMeasure1(human,my_Measures['chest'],'metric'),target_chest_cm)
 
+    ## HIPS
     target_hips_cm = argOptions["target_hips_cm"]  
     # ['macrodetails-height/Height','measure/measure-waist-decrease','measure/measure-bust-decrease']      
     hips_modifier = 'measure/measure-hips-decrease' ## what is decrease and increase ?
